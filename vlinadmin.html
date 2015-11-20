@@ -1,9 +1,18 @@
-<html>
+<html> 
+<head> 
+    <title>Mario Maker Viewer Level Queue</title> 
+    <script type="text/javascript" src="AIRAliases.js"></script> 
+    <script type="text/javascript"> 
+        function appLoad(){ 
+            air.trace("Hello World"); 
+        }  
 
-<script>
+function onLoad(){
 
+refresh();
 
-
+}
+		
 function refresh(){
         if (window.XMLHttpRequest) {
             // code for IE7+, Firefox, Chrome, Opera, Safari
@@ -15,14 +24,12 @@ function refresh(){
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 document.getElementById("ondeck").innerHTML = xmlhttp.responseText;
+				queuecount();
+				writetext();				
             }
         }
         xmlhttp.open('GET','http://lochoko.com/mario2/test.php?chan=JAMCOW',true);
         xmlhttp.send();
-        
-    setTimeout(function(){
-	queuecount();
-       }, 500);
        
 }
 	   
@@ -38,7 +45,7 @@ function queuecount(){
         }
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                document.getElementById("status").innerHTML = xmlhttp.responseText;
+                document.getElementById("ondeck").innerHTML = document.getElementById("ondeck").innerHTML + xmlhttp.responseText;
             }
         }
         xmlhttp.open('GET','http://lochoko.com/mario2/queue.php?c=total',true);
@@ -65,15 +72,13 @@ var SID = document.getElementById("ID").innerHTML;
         }
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                document.getElementById("status").innerHTML = xmlhttp.responseText;
+                document.getElementById("ondeck").innerHTML = xmlhttp.responseText;
+				refresh();
             }
         }
         xmlhttp.open('GET','http://lochoko.com/mario2/update.php?id=' + SID + '&rsn=Next',true);
         xmlhttp.send();
-       
-    setTimeout(function(){
-	   refresh();
-       }, 500);
+
 }
 
 function oldlist(){
@@ -89,15 +94,11 @@ date = document.getElementById('pastdate').value;
         }
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                document.getElementById("status").innerHTML = xmlhttp.responseText;
+                document.getElementById("ondeck").innerHTML = xmlhttp.responseText;
             }
         }
         xmlhttp.open('GET','http://lochoko.com/mario2/list.php?date=' + date,true);
         xmlhttp.send();
-
-    setTimeout(function(){
-	   refresh();
-       }, 500);
 
 }
 
@@ -113,34 +114,53 @@ SID = document.getElementById("ID").innerHTML;
         }
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                document.getElementById("status").innerHTML = xmlhttp.responseText;
+                document.getElementById("ondeck").innerHTML = xmlhttp.responseText;
+				refresh();
             }
         }
         xmlhttp.open('GET','http://lochoko.com/mario2/skip.php?sid=' + SID,true);
         xmlhttp.send();
-
-    setTimeout(function(){
-	   refresh();
-       }, 500);
-
 }
-	   
+
+
+function writetext(){
+
+if (document.getElementById('WriteText').checked) {
+
+var fs = new air.FileStream;
+var FileDir = air.File.documentsDirectory.resolvePath('MMLevels');
+FileDir.createDirectory();
+var TIDFile = air.File.documentsDirectory.resolvePath('MMLevels/Twitch User.txt');
+var GIDFile = air.File.documentsDirectory.resolvePath('MMLevels/Game ID.txt');
+
+
+
+fs.open(TIDFile, air.FileMode.WRITE);
+fs.writeUTFBytes(document.getElementById("TID").innerHTML);
+fs.close();
+
+fs.open(GIDFile, air.FileMode.WRITE);
+fs.writeUTFBytes(document.getElementById("GID").innerHTML);
+fs.close();
+};
+}	   
 </script>
 
 <style>
 
 #MainControls {
-width: 175px; 
+width: 300px; 
 border-radius: 25px; 
 border: 2px solid #73AD21;
-padding: 20px;
+padding: 10px;
 font-size: 20px; 
 }
 
 #status {
 display: inline-block;
 position: absolute;
-bottom: 10px;
+bottom: 30px;
+left: -365px;
 max-height: 50%;
 min-width: 300px;
 border-radius: 25px; 
@@ -152,8 +172,12 @@ overflow: auto;
 
 #ondeck {
 position: absolute; 
-left: 300px; 
+left: 375px; 
 top: 20px; 
+height: 100%;
+}
+
+#id, #gid, #tid {
 font-size: 34px; 
 color: black;
 -webkit-text-fill-color: white; /* Will override color (regardless of order) */
@@ -163,21 +187,29 @@ font-weight: bold;
 font-family: Helvetica;
 }
 
+#list{ 
+overflow: auto; 
+max-height: 80%;
+border: 2px solid #73AD21;
+padding: 20px; 
+font-size: 20px;
+display: inline-block;
+}
 
-#status::-webkit-scrollbar-track
+#list::-webkit-scrollbar-track
 {
 	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 	background-color: #F5F5F5;
 	top: 10px;
 }
 
-#status::-webkit-scrollbar
+#list::-webkit-scrollbar
 {
 	width: 10px;
 	background-color: #F5F5F5;
 }
 
-#status::-webkit-scrollbar-thumb
+#list::-webkit-scrollbar-thumb
 {
 	background-color: #F90;	
 	background-image: -webkit-linear-gradient(45deg,
@@ -192,14 +224,15 @@ font-family: Helvetica;
 
 </style>
 
-<body style="background-color: #00bfff;" onload="refresh()">
+<body style="background-color: #00bfff; overflow:hidden;" onload="onLoad()">
 
 <div id="MainControls">
 <center>Main Controls:<br>
 
 <input type="button" value="Refresh" onclick="refresh()">&nbsp;
 <input type="button" value="Skip" onclick="skip()">&nbsp;
-<input type="button" value="Next" onclick="next()"><br><br>
+<input type="button" value="Next" onclick="next()"><br>
+<input type="checkbox" id="WriteText" Checked> Write to File?<br>
 List Past Levels:
 <input type="date" id="pastdate"><br>
 <input type="button" value="Get List" onClick="oldlist()">
@@ -207,8 +240,5 @@ List Past Levels:
 </center>
 </div>
 
-<div id="status"></div>
-
-<div id="copytest"></div>
 <div id="ondeck" ></div>
 </body></html>
